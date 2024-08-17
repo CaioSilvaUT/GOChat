@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            padding: 20px;
+            border-bottom: 1px solid #ccc;
+            overflow-y: auto;
+        }
+        #input-container {
+            display: flex;
+            border-top: 1px solid #ccc;
+            padding: 10px;
+        }
+        #input-container input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #input-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: 1px solid #007bff;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .message {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .message .username {
+            font-weight: bold;
+        }
+        .message .content {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container"></div>
+    <div id="input-container">
+        <input type="text" id="messageInput" placeholder="Type your message here...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    <script>
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'; // Replace with actual JWT token
+        const ws = new WebSocket('wss://localhost:8080/ws?token=' + token);
+
+        ws.onopen = () => {
+            console.log('Connected to the server');
+        };
+
+        ws.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            displayMessage(message);
+        };
+
+        ws.onclose = () => {
+            console.log('Disconnected from the server');
+        };
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = {
+                username: 'User', // Replace with the actual username
+                content: input.value,
+                type: 'text'
+            };
+            ws.send(JSON.stringify(message));
+            input.value = '';
+        }
+
+        function displayMessage(message) {
+            const chatContainer = document.getElementById('chat-container');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message';
+            messageElement.innerHTML = `
+                <div class="username">${message.username}</div>
+                <div class="content">${message.content}</div>
+            `;
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
